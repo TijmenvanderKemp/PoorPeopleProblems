@@ -28,15 +28,17 @@ object ReinsertUnboughtRelicsPatch {
         ReinsertUnboughtRelicsPatch::class.java.name
     )
 
-    @Suppress("UNUSED_PARAMETER")
-    @SpireInsertPatch(locator = Locator::class)
-    fun thisIsOurActualPatchMethod(instance: AbstractDungeon, saveFile: SaveFile?) {
-        ReflectionHacks.getPrivate<ArrayList<StoreRelic>>(AbstractDungeon.shopScreen, ShopScreen::class.java, "relics")
-            .filter { !it.isPurchased }
-            .map { it.relic }
-            .forEach {
-                tryToAddRelic(getTierList(it), it)
-            }
+    object PatchMethod {
+        @Suppress("UNUSED_PARAMETER")
+        @SpireInsertPatch(locator = Locator::class)
+        fun thisIsOurActualPatchMethod(instance: AbstractDungeon, saveFile: SaveFile?) {
+            ReflectionHacks.getPrivate<ArrayList<StoreRelic>>(AbstractDungeon.shopScreen, ShopScreen::class.java, "relics")
+                .filter { !it.isPurchased }
+                .map { it.relic }
+                .forEach {
+                    tryToAddRelic(getTierList(it), it)
+                }
+        }
     }
 
     private fun getTierList(it: AbstractRelic) = when (it.tier) {

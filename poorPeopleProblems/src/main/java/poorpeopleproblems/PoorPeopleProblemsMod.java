@@ -70,10 +70,7 @@ public class PoorPeopleProblemsMod implements
     logger.info("Success! ID is " + modID);
   }
 
-  public static String getModID() {
-    return modID;
-  }
-
+  @SuppressWarnings("unused")
   public static void initialize() {
     new PoorPeopleProblemsMod();
   }
