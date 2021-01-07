@@ -4,7 +4,7 @@
     <groupId>com.tvdkemp.poorpeopleproblems</groupId>
     <artifactId>PoorPeopleProblems</artifactId> <!--Keep a note of this one: this is the ID used in the "auto add cards" method-->
     <name>Poor People Problems</name>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <description>Reshuffle unbought relics back into the relic pool.</description>
 
     <properties>
