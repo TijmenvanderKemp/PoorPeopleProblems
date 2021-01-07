@@ -118,6 +118,8 @@
                             <target>
                                 <!-- This moves your mod into a common folder where all mods you make can go. -->
                                 <copy file="target/${project.artifactId}.jar" tofile="${Steam.path}/common/SlayTheSpire/SlayTheSpire.app/Contents/Resources/mods/${project.artifactId}.jar"/>
+                                <copy file="target/${project.artifactId}.jar" tofile="../steam/content/${project.artifactId}.jar"/>
+                                <copy file="target/${project.artifactId}.jar" tofile="/Volumes/workspace/slay-the-spire-mod-upload/backups/${project.artifactId}-${project.version}.jar"/>
                             </target>
                         </configuration>
                         <goals>

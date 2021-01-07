@@ -1,9 +1,9 @@
 package poorpeopleproblems;
 
 import basemod.BaseMod;
-import basemod.ModLabeledToggleButton;
+import basemod.ModLabel;
+import basemod.ModMinMaxSlider;
 import basemod.ModPanel;
-import basemod.ModTextPanel;
 import basemod.interfaces.PostInitializeSubscriber;
 import com.badlogic.gdx.graphics.Texture;
 import com.evacipated.cardcrawl.modthespire.lib.SpireConfig;
@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import poorpeopleproblems.util.IDCheckDontTouchPls;
 import poorpeopleproblems.util.TextureLoader;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -26,9 +27,9 @@ public class PoorPeopleProblemsMod implements
     PostInitializeSubscriber {
   public static final Logger logger = LogManager.getLogger(PoorPeopleProblemsMod.class.getName());
   private static String modID;
-  public static Properties poorPeopleProblemsDefaultSettings = new Properties();
+  private static SpireConfig config;
+  public static Properties defaults = new Properties();
   public static final String HOW_FAR_BACK_SHUFFLE = "howFarBackShuffle";
-  public static int howFarBackShuffle = 10;
   private static final String MODNAME = "Default Mod";
   private static final String AUTHOR = "Gremious";
   private static final String DESCRIPTION = "A base for Slay the Spire to start your own mod from, feat. the Default.";
@@ -37,14 +38,12 @@ public class PoorPeopleProblemsMod implements
   public PoorPeopleProblemsMod() {
     logger.info("Subscribe to BaseMod hooks");
     BaseMod.subscribe(this);
-    setModID("poorpeopleproblems");
+    setModID("PoorPeopleProblems");
     logger.info("Done subscribing");
     logger.info("Adding mod settings");
-    poorPeopleProblemsDefaultSettings.setProperty(HOW_FAR_BACK_SHUFFLE, "10");
+    defaults.setProperty(HOW_FAR_BACK_SHUFFLE, "10");
     try {
-      SpireConfig config = new SpireConfig("poorpeopleproblems", "poorPeopleProblemsConfig", poorPeopleProblemsDefaultSettings);
-      config.load();
-      howFarBackShuffle = config.getInt(HOW_FAR_BACK_SHUFFLE);
+      config = new SpireConfig("PoorPeopleProblems", "poorPeopleProblemsConfig", defaults);
     }
     catch (Exception e) {
       e.printStackTrace();
@@ -80,25 +79,36 @@ public class PoorPeopleProblemsMod implements
     logger.info("Loading badge image and mod options");
     Texture badgeTexture = TextureLoader.getTexture(BADGE_IMAGE);
     ModPanel settingsPanel = new ModPanel();
-    ModLabeledToggleButton enableNormalsButton = new ModLabeledToggleButton(
-        "This is the text which goes next to the checkbox.",
-        350.0f, 700.0f, Settings.CREAM_COLOR, FontHelper.charDescFont,
-        true,
-        settingsPanel,
-        label -> { },
-        button -> {
-          howFarBackShuffle = 10;
-          try {
-            SpireConfig config = new SpireConfig("defaultMod", "theDefaultConfig", poorPeopleProblemsDefaultSettings);
-            config.setBool(HOW_FAR_BACK_SHUFFLE, true);
-            config.save();
-          }
-          catch (Exception e) {
-            e.printStackTrace();
-          }
-        });
-    settingsPanel.addUIElement(enableNormalsButton);
+    float xPos = 350f;
+    float yPos = 750f;
+    String text = "Minimum amount of relics before reshuffled relic:";
+    float textWidth = FontHelper.getWidth(FontHelper.charDescFont, text, 1f / Settings.scale);
+
+    ModLabel minimumShuffleDistanceLabel = new ModLabel(text, xPos + 40, yPos + 8, Settings.CREAM_COLOR,
+        FontHelper.charDescFont, settingsPanel, l -> {
+    });
+    settingsPanel.addUIElement(minimumShuffleDistanceLabel);
+    ModMinMaxSlider minimumShuffleDistanceSlider = new ModMinMaxSlider("", xPos + 100f + textWidth, yPos + 15, 1, 20,
+        getMinimumShuffleDistance(), "%.0f", settingsPanel, slider -> {
+      if (config != null) {
+        config.setInt(HOW_FAR_BACK_SHUFFLE, Math.round(slider.getValue()));
+        try {
+          config.save();
+        }
+        catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    });
+    settingsPanel.addUIElement(minimumShuffleDistanceSlider);
     BaseMod.registerModBadge(badgeTexture, MODNAME, AUTHOR, DESCRIPTION, settingsPanel);
     logger.info("Done loading badge Image and mod options");
+  }
+
+  public static int getMinimumShuffleDistance() {
+    if (config == null) {
+      return 10;
+    }
+    return config.getInt(HOW_FAR_BACK_SHUFFLE);
   }
 }

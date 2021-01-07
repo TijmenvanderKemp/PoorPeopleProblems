@@ -49,14 +49,16 @@ object ReinsertRelicImmediatelyPatch {
         }
         logger.info("Pool: $relicList")
         val lastElement = relicList.size - 1
-        val minimumPosition = PoorPeopleProblemsMod.howFarBackShuffle - 1
+        val minimumPosition = PoorPeopleProblemsMod.getMinimumShuffleDistance()
         if (lastElement <= minimumPosition) {
             logger.info("Adding relic ${relic.relicId} at the end of the list.")
             relicList.add(relic.relicId)
         }
-        val insertPosition = AbstractDungeon.merchantRng.random(minimumPosition, lastElement)
-        logger.info("Adding relic ${relic.relicId} at position (0-index) $insertPosition")
-        relicList.add(insertPosition, relic.relicId)
+        else {
+            val insertPosition = AbstractDungeon.merchantRng.random(minimumPosition, lastElement)
+            logger.info("Adding relic ${relic.relicId} at position (0-index) $insertPosition")
+            relicList.add(insertPosition, relic.relicId)
+        }
     }
 
     private class Locator : SpireInsertLocator() {
