@@ -2,10 +2,8 @@ package poorpeopleproblems.patches
 
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon
-import com.megacrit.cardcrawl.saveAndContinue.SaveFile
 import com.evacipated.cardcrawl.modthespire.lib.SpireInsertPatch
 import com.megacrit.cardcrawl.shop.StoreRelic
-import basemod.ReflectionHacks
 import com.megacrit.cardcrawl.shop.ShopScreen
 import com.megacrit.cardcrawl.relics.AbstractRelic
 import com.megacrit.cardcrawl.relics.AbstractRelic.RelicTier
@@ -13,8 +11,6 @@ import poorpeopleproblems.PoorPeopleProblemsMod
 import com.evacipated.cardcrawl.modthespire.lib.SpireInsertLocator
 import kotlin.Throws
 import javassist.CtBehavior
-import com.evacipated.cardcrawl.modthespire.lib.Matcher.MethodCallMatcher
-import com.megacrit.cardcrawl.ui.buttons.ProceedButton
 import com.evacipated.cardcrawl.modthespire.lib.LineFinder
 import com.evacipated.cardcrawl.modthespire.lib.Matcher
 import org.apache.logging.log4j.LogManager
@@ -22,23 +18,15 @@ import java.lang.Exception
 import java.util.ArrayList
 
 @Suppress("unused")
-@SpirePatch(clz = AbstractDungeon::class, method = "nextRoomTransition", paramtypez = [SaveFile::class])
-object ReinsertUnboughtRelicsPatch {
-    private val logger = LogManager.getLogger(
-        ReinsertUnboughtRelicsPatch::class.java.name
-    )
+@SpirePatch(clz = ShopScreen::class, method = "initRelics")
+object ReinsertRelicImmediatelyPatch {
+    private val logger = LogManager.getLogger(ReinsertRelicImmediatelyPatch::class.java.name)
 
-    object PatchMethod {
-        @Suppress("UNUSED_PARAMETER")
-        @SpireInsertPatch(locator = Locator::class)
-        fun thisIsOurActualPatchMethod(instance: AbstractDungeon, saveFile: SaveFile?) {
-            ReflectionHacks.getPrivate<ArrayList<StoreRelic>>(AbstractDungeon.shopScreen, ShopScreen::class.java, "relics")
-                .filter { !it.isPurchased }
-                .map { it.relic }
-                .forEach {
-                    tryToAddRelic(getTierList(it), it)
-                }
-        }
+    @Suppress("UNUSED_PARAMETER")
+    @SpireInsertPatch(locator = Locator::class, localvars = ["tempRelic"])
+    @JvmStatic
+    fun thisIsOurActualPatchMethod(instance: ShopScreen, tempRelic: AbstractRelic) {
+        tryToAddRelic(getTierList(tempRelic), tempRelic)
     }
 
     private fun getTierList(it: AbstractRelic) = when (it.tier) {
@@ -74,8 +62,8 @@ object ReinsertUnboughtRelicsPatch {
     private class Locator : SpireInsertLocator() {
         @Throws(Exception::class)
         override fun Locate(ctMethodToPatch: CtBehavior): IntArray {
-            val finalMatcher: Matcher = MethodCallMatcher(ProceedButton::class.java, "setLabel")
-            return LineFinder.findInOrder(ctMethodToPatch, finalMatcher)
+            val storeRelicConstructorMatcher: Matcher = Matcher.NewExprMatcher(StoreRelic::class.java)
+            return LineFinder.findInOrder(ctMethodToPatch, storeRelicConstructorMatcher)
         }
     }
 }
