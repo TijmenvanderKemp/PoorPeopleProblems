@@ -1,3 +1,3 @@
 # Poor people problems
 
-Reshuffles unbought relics back into the relic pool.
+A Slay the Spire mod: Reshuffles unbought relics back into the relic pool.
